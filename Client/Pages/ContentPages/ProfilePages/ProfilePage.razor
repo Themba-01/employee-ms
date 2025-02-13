@@ -1,0 +1,208 @@
+@inject UserProfileState userProfileState
+@inject GetHttpClient getHttpClient
+@using System.Security.Claims
+@implements IDisposable
+
+@if (allState.ShowUserProfile)
+{
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-lg-3"></div>
+            <div class="col-lg-6">
+                <EditForm Model="userProfileState.userProfile" OnValidSubmit="UpdateProfile">
+                    <DataAnnotationsValidator />
+                    <div class="card border-success shadow-lg">
+                        <div class="card-header">Personal Information</div>
+                        <div class="card-body">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-lg-3"></div>
+                                    <div class="col-lg-6 d-flex justify-content-center">
+                                        <div class="vstack gap-2">
+                                            @{
+                                                var fullImageUrl = $"http://localhost:5162{userProfileState.userProfile.Image}?{DateTime.Now.Ticks}";
+                                                Console.WriteLine($"Full Image URL in View: {fullImageUrl}");
+                                            }
+                                            <img style="width:100px; height:100px; border-radius:50%" src="@fullImageUrl" alt="User Profile Image" />
+                                            <InputFile OnChange="UploadImage" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Id</label>
+                                <InputText @bind-Value="userProfileState.userProfile.Id" class="form-control" disabled />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Name</label>
+                                <InputText @bind-Value="userProfileState.userProfile.Name" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email Address</label>
+                                <InputText @bind-Value="userProfileState.userProfile.Email" class="form-control" />
+                            </div>
+                            <div class="form-group mt-4">
+                                @if (ShowSpinner)
+                                {
+                                    <ButtonLoadingSpinner />
+                                }
+                                else
+                                {
+                                    <button class="btn btn-primary float-end" type="submit">SAVE</button>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <ValidationSummary />
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+            <div class="col-lg-3"></div>
+        </div>
+    </div>
+}
+
+@code {
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Console.WriteLine($"Image Path After Render: {userProfileState.userProfile.Image}");
+        }
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await UserDetails();
+        allState.Action += StateHasChanged;
+        userProfileState.Action += StateHasChanged;
+        Console.WriteLine($"Image Path After Initialization: {userProfileState.userProfile.Image}");
+    }
+
+    public bool ShowSpinner { get; set; } = false;
+
+    private async Task UserDetails()
+    {
+        try
+        {
+            var client = await getHttpClient.GetPrivateHttpClient();
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            userProfileState.userProfile.Id = authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)!.Value;
+            userProfileState.userProfile.Name = authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)!.Value;
+            userProfileState.userProfile.Email = authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)!.Value;
+            
+            // Fetch the image path from the server directly
+            var response = await client.GetAsync($"api/authentication/user-image/{userProfileState.userProfile.Id}");
+            if (!response.IsSuccessStatusCode)
+            {
+                userProfileState.userProfile.Image = "/images/profile/defaultprofileimage.png"; // Changed to server path
+                Console.WriteLine($"Image Path after unsuccessful user-image request: {userProfileState.userProfile.Image}");
+                return;
+            }
+            var result = await response.Content.ReadAsStringAsync();
+            userProfileState.userProfile.Image = result.Trim();
+            Console.WriteLine($"Image Path After Server Response: {userProfileState.userProfile.Image}");
+            
+            if (string.IsNullOrEmpty(userProfileState.userProfile.Image))
+            {
+                userProfileState.userProfile.Image = "/images/profile/defaultprofileimage.png"; // Default image if no image found, server path
+                Console.WriteLine($"Image Path after null/empty result: {userProfileState.userProfile.Image}");
+            }
+            else
+            {
+                if (userProfileState.userProfile.Image.Contains("\""))
+                {
+                    Console.WriteLine("WARNING: Image path contains double quotes in UserDetails.");
+                    userProfileState.userProfile.Image = userProfileState.userProfile.Image.Trim('"');
+                }
+                Console.WriteLine($"Image Path after successful UserDetails: {userProfileState.userProfile.Image}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching user details: {ex.Message}");
+            userProfileState.userProfile.Image = "/images/profile/defaultprofileimage.png"; // Default on error, server path
+            Console.WriteLine($"Image Path after error in UserDetails: {userProfileState.userProfile.Image}");
+        }
+    }
+
+    async Task UpdateProfile()
+    {
+        if (userProfileState.userProfile.Image == "/images/profile/defaultprofileimage.png")
+        {
+            await dialogService.AlertAsync("Address profile image.", "Alert!");
+            return;
+        }
+        ShowSpinner = true;
+        var client = await getHttpClient.GetPrivateHttpClient();
+        var response = await client.PutAsJsonAsync("api/authentication/update-profile", userProfileState.userProfile);
+        if (!response.IsSuccessStatusCode)
+        {
+            ShowSpinner = false;
+            return;
+        }
+        var result = await response.Content.ReadFromJsonAsync<bool>();
+        if (result)
+        {
+            ShowSpinner = false;
+            await dialogService.AlertAsync("Profile updated.", "Success");
+            userProfileState.ProfileUpdated();
+            Console.WriteLine($"Image Path Before Logout: {userProfileState.userProfile.Image}");
+            await LogoutClicked();
+        }
+        ShowSpinner = false;
+    }
+
+    private async Task UploadImage(InputFileChangeEventArgs e)
+    {
+        if (e.File.Name.ToLower().EndsWith(".png"))
+        {
+            var client = await getHttpClient.GetPrivateHttpClient();
+            var content = new MultipartFormDataContent();
+            content.Add(new StreamContent(e.File.OpenReadStream()), "file", e.File.Name);
+            var response = await client.PostAsync($"api/authentication/upload-image/{userProfileState.userProfile.Id}", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<GeneralResponse>();
+                if (result != null && result.Flag)
+                {
+                    userProfileState.userProfile.Image = "/userImages/" + result.Message;
+                    if (userProfileState.userProfile.Image.Contains("\""))
+                    {
+                        Console.WriteLine("WARNING: Image path contains double quotes after UploadImage.");
+                        userProfileState.userProfile.Image = userProfileState.userProfile.Image.Trim('"');
+                    }
+                    Console.WriteLine($"Image Path After Upload: {userProfileState.userProfile.Image}");
+                    userProfileState.ProfileUpdated();
+                    StateHasChanged(); // Force UI refresh
+                }
+            }
+            else
+            {
+                await dialogService.AlertAsync("Failed to upload image.", "Error!");
+            }
+        }
+        else
+        {
+            await dialogService.AlertAsync("PNG file needed.", "Alert!");
+        }
+    }
+
+    private async Task LogoutClicked()
+    {
+        Console.WriteLine($"Image Path on Initialization: {userProfileState.userProfile.Image}");
+        var logoutModel = new UserSession();
+        var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        await customAuthStateProvider.UpdateAuthenticationState(logoutModel);
+        NavManager.NavigateTo("/identity/account/login", replace: true, forceLoad: true);
+    }
+
+    public void Dispose()
+    {
+        allState.Action -= StateHasChanged;
+        userProfileState.Action -= StateHasChanged;
+    }
+}

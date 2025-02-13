@@ -1,0 +1,101 @@
+.navbar-toggler {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.top-row {
+    height: 3.5rem;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.navbar-brand {
+    font-size: 1.1rem;
+}
+
+.bi {
+    display: inline-block;
+    width: 1.5em; /* Adjusted for larger size */
+    height: 1.5em; /* Adjusted for larger size */
+    vertical-align: middle;
+    margin-right: 0.75rem;
+}
+
+.bi::before, 
+[class*=" bi-"]::before, 
+[class^=bi-]::before {
+    display: block;
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    font-family: bootstrap-icons !important;
+    font-style: normal;
+    font-weight: 400 !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    vertical-align: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.nav-item {
+    font-size: 1.2rem; /* Increased font size */
+    padding-bottom: 0.5rem;
+}
+
+.nav-item:first-of-type {
+    padding-top: 1rem;
+}
+
+.nav-item:last-of-type {
+    padding-bottom: 1rem;
+}
+
+.nav-item ::deep a {
+    color: #d7d7d7;
+    border-radius: 4px;
+    height: auto; /* Changed from fixed height to auto */
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem; /* Added padding for better look */
+    font-size: 1.2rem; /* Increased font size */
+}
+
+.nav-item ::deep a.active {
+    background-color: rgba(255,255,255,0.37);
+    color: white;
+}
+
+.nav-item ::deep a:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: white;
+}
+
+/* Media query */
+@media (min-width: 641px) {
+    .navbar-toggler {
+        display: none;
+    }
+
+    .collapse {
+        display: block;
+    }
+    
+    .nav-scrollable {
+        height: calc(100vh - 3.5rem);
+        overflow-y: auto;
+    }
+}
+
+/* Ensure icons align with text */
+.d-flex.align-items-center .bi {
+    margin-top: 0 !important;
+}
+
+/* Specific rule for icons inside nav items */
+.nav-item ::deep a .bi,
+.nav-link .bi {
+    font-size: 1.2rem; /* Match this with the font-size of text */
+    margin-top: 0 !important;
+}

@@ -1,0 +1,164 @@
+@page "/identity/account/login"
+@layout AuthenticationLayout
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-5"></div>
+        <div class="col-lg-2">
+            <EditForm Model="@User" OnValidSubmit="HandleLogin">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="card bg-dark" style="opacity: 0.5; margin-top: 50%; border-radius: 10px; color: white; font-weight: bold">
+                    <div class="card-header text-center fs-5 mb-2">Login</div>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-4 col-md-4 col-sm-4"></div>
+                            <div class="col-lg-4 col-md-4 col-sm-4 d-flex justify-content-center">
+                                <img style="border-radius: 20px" src="images/companylogos/mylogo.png" height="50" width="50"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Email Input -->
+                        <div class="form-group mt-3">
+                            <label class="form-label">Email</label>
+                            <InputText @bind-Value="User.Email" class="form-control" />
+                        </div>
+
+                        <!-- Password Input -->
+                        <div class="form-group mt-3">
+                            <label class="form-label">Password</label>
+                            <InputText type="password" @bind-Value="User.Password" class="form-control" />
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="form-group mt-3">
+                            @if (isProcessing)
+                            {
+                                <button class="btn btn-primary float-end" type="button" disabled>
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    Processing...
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-outline-primary float-end" type="submit">Login</button>
+                            }
+                        </div>
+
+                        <!-- Display message -->
+                        @if (!string.IsNullOrEmpty(message))
+                        {
+                            <div class="alert @messageClass" role="alert">
+                                @message
+                            </div>
+                        }
+                    </div>
+                    <div class="card-footer">
+                        <span class="text-center">
+                            Don't have an account? 
+                            <a class="btn-link" href="identity/account/register">Register</a>
+                        </span>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+        <div class="col-lg-5"></div>
+    </div>
+</div>
+
+@code {
+    private Login User = new();
+    private bool isProcessing = false;
+    private string message = "";
+    private string messageClass = "";
+    [CascadingParameter] public Task<AuthenticationState> AuthenticationState { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await CheckUserAuthentication();
+    }
+
+    private async Task HandleLogin()
+    {
+        isProcessing = true;
+        StateHasChanged();
+        try
+        {
+            var result = await accountService.SignInAsync(User);
+            await StoreTokenAndNavigate(result);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Login error: {ex.Message}");
+            await DisplayMessage("Error", $"Login error: {ex.Message}", "alert-danger");
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task StoreTokenAndNavigate(LoginResponse result)
+    {
+        if (result.Flag)
+        {
+            await DisplayMessage("Success", result.Message, "alert-success");
+
+            if (AuthStateProvider is CustomAuthenticationStateProvider customAuthStateProvider)
+            {
+                if (result is LoginResponse loginResult)
+                {
+                    await customAuthStateProvider.UpdateAuthenticationState(new UserSession() 
+                    { 
+                        RefreshToken = loginResult.RefreshToken,
+                        Token = loginResult.Token 
+                    });
+
+                    var savedSession = await localStorageService.GetToken();
+                    Console.WriteLine($"Refresh Token saved: {savedSession?.RefreshToken ?? "No refresh token found"}");
+                    Console.WriteLine($"JWT Token saved: {savedSession?.Token ?? "No JWT token found"}");
+
+                    await JSRuntime.InvokeVoidAsync("alert", $"Refresh Token in Local Storage: {savedSession?.RefreshToken ?? "Not Found"}");
+
+                    NavManager.NavigateTo("/", forceLoad: true);
+                }
+                else
+                {
+                    await DisplayMessage("Error", "Login result does not match expected type.", "alert-danger");
+                }
+            }
+            else
+            {
+                await DisplayMessage("Error", "Authentication state provider not found.", "alert-danger");
+            }
+        }
+        else
+        {
+            await DisplayMessage("Alert", result.Message, "alert-warning");
+        }
+    }
+
+    private async Task DisplayMessage(string title, string content, string cssClass)
+    {
+        message = $"{title}: {content}";
+        messageClass = cssClass;
+        StateHasChanged();
+
+        // Clear message after a delay
+        await Task.Delay(5000); // Show for 5 seconds
+        message = "";
+        messageClass = "";
+        StateHasChanged();
+    }
+
+    private async Task CheckUserAuthentication()
+    {
+        var user = (await AuthenticationState).User;
+        bool IsUserAuthenticated = user.Identity!.IsAuthenticated;
+        if (IsUserAuthenticated)
+            NavManager.NavigateTo("/home/dashboard"); 
+    }
+}

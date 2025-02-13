@@ -1,0 +1,52 @@
+@page "/home/dashboard"
+@layout MainLayout
+@using Client.Pages.ContentPages.DepartmentPages
+@using Client.Pages.AdministrationPages
+@using Client.Pages.ContentPages.LocationPages
+@using Client.Pages.ContentPages.UserPages
+@using Client.Pages.ContentPages.EmployeePages
+@using Client.Pages.OtherPages.OvertimePages
+@using Client.Pages.OtherPages.DoctorPages
+@using Client.Pages.OtherPages.SanctionPages
+@using Client.Pages.OtherPages.VacationPages
+@using Client.Pages.ContentPages.ProfilePages
+
+
+
+
+<TableBanner/>
+<GeneralDepartmentPage/>
+<DepartmentPage/>
+<BranchPage/>
+<CountryPage/>
+<CityPage/>
+<TownPage/>
+<UserPage/>
+<EmployeePage/>
+<DoctorPage/>
+<OvertimePage/>
+<OvertimeTypePage/>
+<SanctionPage/>
+<SanctionTypePage/>
+<VacationPage/>
+<VacationTypePage/>
+<ProfilePage/>
+
+
+
+@code{
+    [CascadingParameter] public Task<AuthenticationState> AuthenticationState { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await CheckUserAuthentication();
+    }
+
+    private async Task CheckUserAuthentication()
+    {
+        var user = (await AuthenticationState).User;
+        bool IsUserAuthenticated = user.Identity!.IsAuthenticated;
+        if (!IsUserAuthenticated)
+            NavManager.NavigateTo("/identity/account/login");
+    }
+}

@@ -1,0 +1,157 @@
+@inject AllState allState
+@if (allState.ShowGeneralDepartment)
+{
+    <div class="department-header">
+        <h4 class="float-start">General Department</h4>
+        <button class="btn btn-outline-success float-end" @onclick="OpenDialog">
+            <i class="bi bi-plus-circle-dotted"></i> Add Department
+        </button>
+    </div>
+
+    <div class="table-container" style="max-height:580px; overflow-x:hidden; overflow-y:scroll;">
+        <table class="table">
+            <!-- Your table content here -->
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Id</th>
+                    <th scope="col">General Department</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (GeneralDepartments is not null)
+                {
+                    int count = 1;
+                    foreach (var item in GeneralDepartments)
+                    {
+                        <tr>
+                            <th scope="row">@count</th>
+                            <td>@item.Id</td>
+                            <td>@item.Name</td>
+                            <td>
+                                <i class="bi bi-pencil text-info" id="cursorStyle"
+                                @onclick="()=>EditClicked(item)"></i>
+                                <i class="bi bi-trash text-danger" id="cursorStyle"
+                                @onclick="()=>DeleteClicked(item)"></i>
+                            </td>
+                        </tr>
+                        count++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4"><div class="alert alert-info text-center">No General Department added yet</div></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<GeneralDepartmentDialog @ref="generalDepartmentDialog"
+                         HandleSaveOperationEvent="HandleSaveOperationEvent"
+                         GeneralDepartment="GeneralDepartment"/>
+
+<style>
+    .cursorStyle{
+        cursor: pointer
+    }
+</style>
+
+@code {
+    GeneralDepartmentDialog? generalDepartmentDialog;
+    GeneralDepartment GeneralDepartment = new();  // Corrected from 'Department'
+    public string Title { get; set; } = "Add";
+    public List<GeneralDepartment> GeneralDepartments { get; set; } = new();
+
+    protected async override Task OnInitializedAsync()
+    {
+        await GetGeneralDepartments();
+        allState.Action += StateHasChanged;
+    }
+
+    private async Task GetGeneralDepartments()
+    {
+        GeneralDepartments = await generalDepartmentService.GetAll(Constants.GeneralDepartmentBaseUrl);
+    }
+
+    void OpenDialog()
+    {
+        generalDepartmentDialog?.OpenDialog();
+    }
+
+    private async Task HandleSaveOperationEvent(GeneralDepartment generalDepartment)
+    {
+        bool successCheck = false;
+        if (GeneralDepartment.Id > 0)
+        {
+            var result = await generalDepartmentService
+                .Update(generalDepartment, Constants.GeneralDepartmentBaseUrl);
+            successCheck = await HandleResponse(result);
+        }
+        else
+        {
+            var response = await generalDepartmentService
+                .Insert(generalDepartment, Constants.GeneralDepartmentBaseUrl);
+            successCheck = await HandleResponse(response);
+        }
+        if (successCheck)
+        {
+            GeneralDepartment = new GeneralDepartment();  // Reset the form
+            await GetGeneralDepartments();
+            generalDepartmentDialog?.ChangeTitle("Add");
+        }
+    }
+
+    private async Task<bool> HandleResponse(GeneralResponse response)
+    {
+        if (response.Flag)
+        {
+            await dialogService.AlertAsync(response.Message, "Successful operation");
+            return true;
+        }
+        else
+        {
+            // Display server validation errors or general error messages
+            await dialogService.AlertAsync(response.Message, "Error");
+            return false;
+        }
+    }
+
+    private void EditClicked(GeneralDepartment dep)
+    {
+        generalDepartmentDialog?.ChangeTitle("Update");
+        GeneralDepartment = dep;  // Corrected variable name
+        generalDepartmentDialog?.OpenDialog();
+    }
+    private async Task DeleteClicked(GeneralDepartment dep)
+    {
+        bool confirm = await dialogService.ConfirmAsync($"Are you sure you want to delete {dep.Name}?", "Confirm Delete?");
+        if (!confirm) return;
+
+        var response = await generalDepartmentService.DeleteById(dep.Id, Constants.GeneralDepartmentBaseUrl);
+        if (await DisplayMessage(response.Flag, response.Message))
+            await GetGeneralDepartments();
+    }
+
+    private async Task<bool> DisplayMessage(bool flag, string message)
+    {
+        if (flag)
+        {
+            await dialogService.AlertAsync(message, "Successful operation");
+            return true;
+        }
+        else
+        {
+            await dialogService.AlertAsync(message, "Alert!");
+            return false;
+        }
+    }
+
+    public void Dispose()
+    {
+        allState.Action -= StateHasChanged;
+    }
+}

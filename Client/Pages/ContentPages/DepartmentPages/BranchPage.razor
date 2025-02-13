@@ -1,0 +1,167 @@
+@inject AllState allState
+
+@if (allState.ShowBranch)
+{
+    <div class="branch-header">
+        <h4 class="float-start">Branch</h4>
+        <button class="btn btn-outline-success float-end" @onclick="OpenDialog">
+            <i class="bi bi-plus-circle-dotted"></i> Add Branch
+        </button>
+    </div>
+
+    <div class="table-container" style="max-height:580px; overflow-x:hidden; overflow-y:scroll;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Id</th>
+                    <th scope="col">Branch</th>
+                    <th scope="col">Department</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Branches is not null)
+                {
+                    int count = 1;
+                    foreach (var item in Branches)
+                    {
+                        <tr>
+                            <th scope="row">@count</th>
+                            <td>@item.Id</td>
+                            <td>@item.Name</td>
+                            <td>@(item.Department?.Name ?? "Not Assigned")</td>
+                            <td>
+                                <i class="bi bi-pencil text-info cursorStyle"
+                                   @onclick="() => EditClicked(item)"></i>
+                                <i class="bi bi-trash text-danger cursorStyle"
+                                   @onclick="() => DeleteClicked(item)"></i>
+                            </td>
+                        </tr>
+                        count++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5"><div class="alert alert-info text-center">No Branch added yet</div></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<BranchDialog @ref="branchDialog"
+              HandleSaveOperationEvent="HandleSaveOperationEvent"
+              Branch="Branch"
+              Departments="Departments"/>
+
+<style>
+    .cursorStyle{
+        cursor: pointer
+    }
+</style>
+
+@code {
+    BranchDialog? branchDialog;
+    Branch Branch = new();
+    public string Title { get; set; } = "Add";
+    public List<Branch> Branches { get; set; } = new();
+    public List<Department> Departments { get; set; } = new();
+
+    protected async override Task OnInitializedAsync()
+    {
+        await GetBranches();
+        await GetDepartments();
+        allState.Action += StateHasChanged;
+    }
+
+    private async Task GetBranches()
+    {
+        Branches = await branchService.GetAll(Constants.BranchBaseUrl);
+    }
+
+    private async Task GetDepartments()
+    {
+        Departments = await departmentService.GetAll(Constants.DepartmentBaseUrl);
+    }
+
+    void OpenDialog()
+    {
+        Branch = new Branch(); // Reset to a new Branch before opening dialog for Add
+        branchDialog?.OpenDialog();
+    }
+
+    private async Task HandleSaveOperationEvent(Branch branch)
+    {
+        bool successCheck = false;
+        if (branch.Id > 0) // Use the parameter 'branch' for consistency
+        {
+            var result = await branchService.Update(branch, Constants.BranchBaseUrl);
+            successCheck = await HandleResponse(result);
+        }
+        else
+        {
+            var response = await branchService.Insert(branch, Constants.BranchBaseUrl);
+            successCheck = await HandleResponse(response);
+        }
+        if (successCheck)
+        {
+            await GetBranches(); // Refresh list after successful operation
+            branchDialog?.ChangeTitle("Add"); // Reset title for next operation
+        }
+    }
+
+    private async Task<bool> HandleResponse(GeneralResponse response)
+    {
+        if (response.Flag)
+        {
+            await dialogService.AlertAsync(response.Message, "Successful operation");
+            return true;
+        }
+        else
+        {
+            await dialogService.AlertAsync(response.Message, "Error");
+            return false;
+        }
+    }
+
+    private void EditClicked(Branch branch)
+    {
+        Title = "Update"; 
+        Branch = branch; // Set the current branch for editing
+        branchDialog?.OpenDialog();
+    }
+
+    private async Task DeleteClicked(Branch branch)
+    {
+        bool confirm = await dialogService.ConfirmAsync($"Are you sure you want to delete {branch.Name}?", "Confirm Delete?");
+        if (!confirm) return;
+
+        var response = await branchService.DeleteById(branch.Id, Constants.BranchBaseUrl);
+        if (await DisplayMessage(response.Flag, response.Message))
+        {
+            await GetBranches(); // Refresh the list
+        }
+    }
+
+    private async Task<bool> DisplayMessage(bool flag, string message)
+    {
+        if (flag)
+        {
+            await dialogService.AlertAsync(message, "Successful operation");
+            return true;
+        }
+        else
+        {
+            await dialogService.AlertAsync(message, "Alert!");
+            return false;
+        }
+    }
+
+    public void Dispose()
+    {
+        allState.Action -= StateHasChanged;
+    }
+}

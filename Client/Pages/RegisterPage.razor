@@ -1,0 +1,146 @@
+@page "/identity/account/register"
+@layout AuthenticationLayout
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-5"></div>
+        <div class="col-lg-2">
+            <EditForm Model="@User" OnValidSubmit="HandleRegistration">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="card bg-dark" style="opacity: 0.5; margin-top: 50%; border-radius: 10px; color: white; font-weight: bold">
+                    <div class="card-header text-center fs-5 mb-2">Register</div>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-4 col-md-4 col-sm-4"></div>
+                            <div class="col-lg-4 col-md-4 col-sm-4 d-flex justify-content-center">
+                                <img style="border-radius: 20px" src="images/companylogos/mylogo.png" height="50" width="50"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Full Name Input -->
+                        <div class="form-group mt-3">
+                            <label class="form-label">Fullname</label>
+                            <InputText @bind-Value="User.Fullname" class="form-control" />
+                        </div>
+
+                        <!-- Email Input -->
+                        <div class="form-group mt-3">
+                            <label class="form-label">Email</label>
+                            <InputText @bind-Value="User.Email" class="form-control" />
+                        </div>
+
+                        <!-- Password Input -->
+                        <div class="form-group mt-3">
+                            <label class="form-label">Password</label>
+                            <InputText type="password" @bind-Value="User.Password" class="form-control" />
+                        </div>
+
+                        <!-- Confirm Password Input -->
+                        <div class="form-group mt-3">
+                            <label class="form-label">Confirm Password</label>
+                            <InputText type="password" @bind-Value="User.ConfirmPassword" class="form-control" />
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="form-group mt-3">
+                            @if (isProcessing)
+                            {
+                                <button class="btn btn-primary float-end" type="button" disabled>
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    Processing...
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-outline-primary float-end" type="submit">Register</button>
+                            }
+                        </div>
+
+                        <!-- Display message -->
+                        @if (!string.IsNullOrEmpty(message))
+                        {
+                            <div class="alert @messageClass" role="alert">
+                                @message
+                            </div>
+                        }
+                    </div>
+                    <div class="card-footer">
+                        <span class="text-center">
+                            Already have an account? 
+                            <a class="btn-link" href="identity/account/login">Login</a>
+                        </span>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+        <div class="col-lg-5"></div>
+    </div>
+</div>
+
+@code {
+    private Register User = new();  
+    private bool isProcessing = false;  
+    private string message = "";
+    private string messageClass = "";
+    [CascadingParameter] public Task<AuthenticationState> AuthenticationState { get; set; }
+    protected async override Task OnInitializedAsync()
+    {
+        await CheckUserAuthentication();
+    }
+
+    private async Task HandleRegistration()
+    {
+        isProcessing = true;
+        StateHasChanged();
+        try
+        {
+            var result = await accountService.CreateAsync(User);
+
+            if (result.Flag)
+            {
+                await DisplayMessage("Success", result.Message, "alert-success");
+                // Delay navigation to give user time to read success message
+                await Task.Delay(2000);
+                NavManager.NavigateTo("/identity/account/login");
+            }
+            else
+            {
+                await DisplayMessage("Error", result.Message, "alert-danger");
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayMessage("Error", $"An unexpected error occurred: {ex.Message}", "alert-danger");
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DisplayMessage(string title, string content, string cssClass)
+    {
+        message = $"{title}: {content}";
+        messageClass = cssClass;
+        StateHasChanged();
+
+        // Clear message after a delay
+        await Task.Delay(5000); // Show for 5 seconds
+        message = "";
+        messageClass = "";
+        StateHasChanged();
+    }
+
+    private async Task CheckUserAuthentication()
+    {
+        var user = (await AuthenticationState).User;
+        bool IsUserAuthenticated = user.Identity!.IsAuthenticated;
+        if (IsUserAuthenticated)
+            NavManager.NavigateTo("/home/dashboard"); 
+    }
+}

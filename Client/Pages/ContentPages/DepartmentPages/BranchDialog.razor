@@ -1,0 +1,85 @@
+@using BaseLibrary.Entities
+@using Microsoft.AspNetCore.Components.Forms
+
+<SfDialog Width="350px" IsModal="true" ShowCloseIcon="true" @bind-Visible="IsVisible">
+    <DialogEvents OnOpen="OpenDialog"></DialogEvents>
+    <DialogTemplates>
+        <Header>@Title Branch</Header>
+        <Content>
+            <EditForm Model="Branch" OnValidSubmit="Save">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="card border-success">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">Id</label>
+                            <input @bind="Branch.Id" class="form-control" disabled />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Name</label>
+                            <InputText @bind-Value="Branch.Name" class="form-control" />
+                        </div>
+                        <div class="form-group mt-3 mb-3">
+                            <label class="form-label">Select Department</label>
+                            <SfDropDownList TValue="int" TItem="Department" Placeholder="Select Department" DataSource="Departments" @bind-Value="Branch.DepartmentId">
+                                <DropDownListFieldSettings Value="Id" Text="Name"></DropDownListFieldSettings>
+                                <DropDownListEvents TValue="int" TItem="Department" ValueChange="OnValueChange"></DropDownListEvents>
+                            </SfDropDownList>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-primary float-end" type="submit">SAVE</button>
+                    </div>
+                </div>
+            </EditForm>
+        </Content>
+    </DialogTemplates>
+    
+</SfDialog>
+
+@code {
+    [Parameter] public Branch Branch { get; set; } = new();
+    [Parameter] public List<Department> Departments { get; set; } = new();
+    [Parameter] public EventCallback<Branch> HandleSaveOperationEvent { get; set; }
+    private bool IsVisible { get; set; } = false;
+    public string Title { get; set; } = "Add";
+
+    public async Task OpenDialog()
+    {
+        IsVisible = true;
+        await ForceLoadDepartments();
+        StateHasChanged();
+    }
+    async Task ForceLoadDepartments()
+    {
+        Departments = await departmentService.GetAll(Constants.DepartmentBaseUrl);
+    }
+
+    async Task Save()
+    {
+        Console.WriteLine($"Branch.Name: {Branch.Name}, DepartmentId: {Branch.DepartmentId}");
+        if (string.IsNullOrEmpty(Branch.Name) || Branch.DepartmentId <= 0)
+        {
+            Console.WriteLine("Save method called");
+            await dialogService.AlertAsync("You need to provide the Branch name and select a Department.", "Alert!");
+        }
+        else
+        {
+            await HandleSaveOperationEvent.InvokeAsync(Branch);
+            Branch = new Branch();
+            IsVisible = true;
+            StateHasChanged();
+        }
+    }
+
+    public void ChangeTitle(string title)
+    {
+        Title = title;
+    }
+
+    private void OnValueChange(ChangeEventArgs<int, Department> args)
+    {
+        Console.WriteLine($"Selected DepartmentId: {args.Value}");
+        Branch.DepartmentId = args.Value;
+    }
+}
