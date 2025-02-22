@@ -1,0 +1,73 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\USER\\EmployeeManagementSystem\\Server\\wwwroot\\userImages\\1de448e7-4bee-4d23-9af8-ca1e1d80233d.png",
+      "PackagePath": "staticwebassets\\userImages\\1de448e7-4bee-4d23-9af8-ca1e1d80233d.png"
+    },
+    {
+      "Id": "C:\\Users\\USER\\EmployeeManagementSystem\\Server\\wwwroot\\userImages\\2623df42-66d0-484e-97e6-cfc6de99a77c.png",
+      "PackagePath": "staticwebassets\\userImages\\2623df42-66d0-484e-97e6-cfc6de99a77c.png"
+    },
+    {
+      "Id": "C:\\Users\\USER\\EmployeeManagementSystem\\Server\\wwwroot\\userImages\\27faca60-f0d1-4d9a-bcf1-7e551cd4e988.png",
+      "PackagePath": "staticwebassets\\userImages\\27faca60-f0d1-4d9a-bcf1-7e551cd4e988.png"
+    },
+    {
+      "Id": "C:\\Users\\USER\\EmployeeManagementSystem\\Server\\wwwroot\\userImages\\3941122d-2669-4d6c-b06a-9b4daa66d7ba.png",
+      "PackagePath": "staticwebassets\\userImages\\3941122d-2669-4d6c-b06a-9b4daa66d7ba.png"
+    },
+    {
+      "Id": "C:\\Users\\USER\\EmployeeManagementSystem\\Server\\wwwroot\\userImages\\775eefd5-f7da-4d19-8aa2-746f2f97f118.png",
+      "PackagePath": "staticwebassets\\userImages\\775eefd5-f7da-4d19-8aa2-746f2f97f118.png"
+    },
+    {
+      "Id": "C:\\Users\\USER\\EmployeeManagementSystem\\Server\\wwwroot\\userImages\\8e37dfae-c4ec-4a3b-87e5-b334e40dbfdd.png",
+      "PackagePath": "staticwebassets\\userImages\\8e37dfae-c4ec-4a3b-87e5-b334e40dbfdd.png"
+    },
+    {
+      "Id": "C:\\Users\\USER\\EmployeeManagementSystem\\Server\\wwwroot\\userImages\\958dbb53-ae28-4746-be8f-81736013ca6c.png",
+      "PackagePath": "staticwebassets\\userImages\\958dbb53-ae28-4746-be8f-81736013ca6c.png"
+    },
+    {
+      "Id": "C:\\Users\\USER\\EmployeeManagementSystem\\Server\\wwwroot\\userImages\\97fda200-0927-4ac2-8436-4e549bc347f9.png",
+      "PackagePath": "staticwebassets\\userImages\\97fda200-0927-4ac2-8436-4e549bc347f9.png"
+    },
+    {
+      "Id": "C:\\Users\\USER\\EmployeeManagementSystem\\Server\\wwwroot\\userImages\\9e777059-d835-4a15-bb08-0385c75e269b.png",
+      "PackagePath": "staticwebassets\\userImages\\9e777059-d835-4a15-bb08-0385c75e269b.png"
+    },
+    {
+      "Id": "C:\\Users\\USER\\EmployeeManagementSystem\\Server\\wwwroot\\userImages\\abfccbfb-464a-4085-8040-57f43bb771e6.png",
+      "PackagePath": "staticwebassets\\userImages\\abfccbfb-464a-4085-8040-57f43bb771e6.png"
+    },
+    {
+      "Id": "C:\\Users\\USER\\EmployeeManagementSystem\\Server\\wwwroot\\userImages\\b8408e8a-4b13-4eb5-869f-23ebbbdd1f8b.png",
+      "PackagePath": "staticwebassets\\userImages\\b8408e8a-4b13-4eb5-869f-23ebbbdd1f8b.png"
+    },
+    {
+      "Id": "C:\\Users\\USER\\EmployeeManagementSystem\\Server\\wwwroot\\userImages\\c8b64749-6eca-41ea-b6ce-2d6f9d9468db.png",
+      "PackagePath": "staticwebassets\\userImages\\c8b64749-6eca-41ea-b6ce-2d6f9d9468db.png"
+    },
+    {
+      "Id": "C:\\Users\\USER\\EmployeeManagementSystem\\Server\\wwwroot\\userImages\\f1c638ef-012c-426c-a9bb-5fdebc76a4e0.png",
+      "PackagePath": "staticwebassets\\userImages\\f1c638ef-012c-426c-a9bb-5fdebc76a4e0.png"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.Server.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.build.Server.props",
+      "PackagePath": "build\\Server.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.Server.props",
+      "PackagePath": "buildMultiTargeting\\Server.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.buildTransitive.Server.props",
+      "PackagePath": "buildTransitive\\Server.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

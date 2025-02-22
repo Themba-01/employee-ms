@@ -25,7 +25,7 @@ namespace ServerLibrary.Repositories.Implementations
                 .ToListAsync();
         }
 
-        public async Task<VacationType> GetById(int id)
+        public async Task<VacationType?> GetById(int id)
         {
             return await appDbContext.VacationTypes.FindAsync(id);
         }

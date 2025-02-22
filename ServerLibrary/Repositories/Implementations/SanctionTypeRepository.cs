@@ -25,7 +25,7 @@ namespace ServerLibrary.Repositories.Implementations
                 .ToListAsync();
         }
 
-        public async Task<SanctionType> GetById(int id)
+        public async Task<SanctionType?> GetById(int id)
         {
             return await appDbContext.SanctionTypes.FindAsync(id);
         }

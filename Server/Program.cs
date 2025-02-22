@@ -87,11 +87,23 @@ builder.Services.AddScoped<IGenericRepositoryInterface<Doctor>, DoctorRepository
 builder.Services.AddScoped<IGenericRepositoryInterface<Employee>, EmployeeRepository>();
 
 // CORS setup: Allow specific origins, methods, and headers
+/*
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin", policy =>
     {
         policy.WithOrigins("http://localhost:5296", "https://localhost:7097")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+*/
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin", policy =>
+    {
+        policy.WithOrigins("http://localhost:5000")  // Match client port from docker-compose
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

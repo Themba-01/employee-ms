@@ -25,7 +25,7 @@ namespace ServerLibrary.Repositories.Implementations
             .ToListAsync();
         }
 
-        public async Task<Doctor> GetById(int id)
+        public async Task<Doctor?> GetById(int id)
         {
             return await appDbContext.Doctors.FirstOrDefaultAsync(eid => eid.EmployeeId == id);
         }

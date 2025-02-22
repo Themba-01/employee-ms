@@ -25,7 +25,7 @@ namespace ServerLibrary.Repositories.Implementations
                 .ToListAsync();
         }
 
-        public async Task<OvertimeType> GetById(int id)
+        public async Task<OvertimeType?> GetById(int id)
         {
             return await appDbContext.OvertimeTypes.FindAsync(id);
         }
