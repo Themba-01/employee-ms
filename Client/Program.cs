@@ -24,7 +24,9 @@ builder.Services.AddTransient<CustomHttpHandler>();  // Register CustomHttpHandl
 builder.Services.AddHttpClient("SystemApiClient", client =>
 {
     //client.BaseAddress = new Uri("http://localhost:5162/");
-    client.BaseAddress = new Uri("http://localhost:5001/");
+    //client.BaseAddress = new Uri("http://localhost:5001/");
+    string? apiUrl = Environment.GetEnvironmentVariable("API_URL");
+    client.BaseAddress = new Uri(apiUrl ?? "http://34.35.39.193");
 }).AddHttpMessageHandler<CustomHttpHandler>(); // Add CustomHttpHandler to HttpClient
 
 // Register other services

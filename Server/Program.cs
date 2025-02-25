@@ -98,12 +98,23 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
 });
-*/
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin", policy =>
     {
         policy.WithOrigins("http://localhost:5000")  // Match client port from docker-compose
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+*/
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin", policy =>
+    {
+        policy.WithOrigins("http://34.35.68.181")  // Match client port from docker-compose
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      containers:
+      - name: server
+        image: gcr.io/employee-ms-123/server:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: ConnectionStrings__DefaultConnection
+          value: "Server=34.35.64.33,1433;Database=EmployeeDb;User Id=Thembinkosi;Password=Themba1234;TrustServerCertificate=True"
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        - name: PORT
+          value: "80"
+        - name: JwtSection__Key
+          value: "9f2b8e3c9f47a43b37ab78e192adfcd14c828432ee3e78b3d3b9b3494ad0b6db"
+        - name: JwtSection__Issuer
+          value: "http://34.35.39.193"
+        - name: JwtSection__Audience
+          value: "http://34.35.39.193"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server-service
+spec:
+  selector:
+    app: server
+  ports:
+  - port: 80
+    targetPort: 80
+  type: LoadBalancer

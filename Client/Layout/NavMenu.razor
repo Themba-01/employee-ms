@@ -30,7 +30,7 @@
                             <span>Administration</span>
                         </div>
                     </NavLink>
-                    <a class="nav-link text-white" style="margin-left:1rem; visibility:@CssStyle">
+                    <a class="nav-link text-white" style="margin-left:1rem; display:@CssStyle">
                         <div class="d-flex align-items-center" @onclick="UserClicked">
                             <span class="bi bi-people me-2"></span>
                             <span>Users</span>
@@ -49,7 +49,7 @@
                             <span>Management</span>
                         </div>
                     </NavLink>
-                    <div class="nav-link text-white" style="margin-left:1rem; visibility:@DepartmentCssStyle">
+                    <div class="nav-link text-white" style="margin-left:1rem; display:@DepartmentCssStyle">
                         <ul class="list-group">
                             <li style="list-style:none" class="cursor-pointer">
                                 <a class="nav-link" @onclick="GeneralDepartmentClicked">
@@ -159,16 +159,16 @@
         collapseNavMenu = !collapseNavMenu;
     }
 
-    private string CssStyle = "hidden";
+    private string CssStyle = "none";
     private void ShowAdminMenuContainer()
     {
-        CssStyle = CssStyle == "visible" ? "hidden" : "visible";
+        CssStyle = CssStyle == "block" ? "none" : "block";
     }
 
-    private string DepartmentCssStyle = "hidden";
+    private string DepartmentCssStyle = "none";
     private void ShowDepartmentContainer()
     {
-        DepartmentCssStyle = DepartmentCssStyle == "visible" ? "hidden" : "visible";
+        DepartmentCssStyle = DepartmentCssStyle == "block" ? "none" : "block";
     }
 
     void GeneralDepartmentClicked()
