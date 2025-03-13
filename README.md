@@ -1,3 +1,4 @@
+fIRSTLY, HERE'S A YOUTUBE VIDEO LINK FOR THIS APPLICATION: https://youtu.be/58qTnzSphjc
 Employee Management System
 A full-stack application for managing employee data, built with ASP.NET Core for the backend and Blazor WebAssembly for the frontend.
 
